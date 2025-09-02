@@ -1,4 +1,5 @@
-# openssl_version.rb --- get OpenSSL version
+# frozen_string_literal: true
+
 if defined?(Facter::Util::Resolution.which) && Facter::Util::Resolution.which('openssl')
   Facter.add(:openssl_version) do
     setcode do

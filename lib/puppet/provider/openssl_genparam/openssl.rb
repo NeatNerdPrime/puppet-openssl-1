@@ -1,5 +1,6 @@
-# openssl.rb --- Generate openssl parameter files
+# frozen_string_literal: true
 
+require 'fileutils'
 require 'securerandom'
 
 Puppet::Type.type(:openssl_genparam).provide(:openssl) do
@@ -23,7 +24,9 @@ Puppet::Type.type(:openssl_genparam).provide(:openssl) do
     Open3.popen2(*param) do |_stdin, stdout, process_status|
       Puppet.debug("openssl_genparam: #{resource[:file]} opened")
 
-      stdout.each_line { |_| }
+      stdout.each_line do |line|
+        Puppet.debug("openssl_genparam: read #{line} from command")
+      end
 
       # A process failure indicates that the target file does not have the
       # correct content, so we (re)create the resource.  The process failure
@@ -46,7 +49,7 @@ Puppet::Type.type(:openssl_genparam).provide(:openssl) do
     cre_param = ['genpkey', '-genparam']
 
     # use a temporary file to generate the parameters and rename it when done
-    tfile = resource[:file] + '.' + SecureRandom.uuid
+    tfile = "#{resource[:file]}.#{SecureRandom.uuid}"
     cre_param << '-out' << tfile
 
     case resource[:algorithm]
@@ -65,12 +68,12 @@ Puppet::Type.type(:openssl_genparam).provide(:openssl) do
 
     File.rename(tfile, resource[:file])
   ensure
-    File.unlink(tfile) if File.exist?(tfile)
+    FileUtils.rm_f(tfile)
     @trigger_refresh = false
   end
 
   def destroy
-    File.unlink(resource[:file])
+    FileUtils.rm_f(resource[:file])
     @trigger_refresh = false
   end
 

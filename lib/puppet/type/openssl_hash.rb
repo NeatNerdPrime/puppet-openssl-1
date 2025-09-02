@@ -1,4 +1,4 @@
-# openssl_hash.rb --- Manage certificate hash as symbolic link
+# frozen_string_literal: true
 
 Puppet::Type.newtype(:openssl_hash) do
   @doc = <<-DOC

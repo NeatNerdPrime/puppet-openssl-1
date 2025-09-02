@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'openssl::key' do
@@ -12,7 +14,7 @@ describe 'openssl::key' do
 
   let(:title) { 'key' }
 
-  before(:each) do
+  before do
     # Mock the Puppet file() function
     Puppet::Parser::Functions.newfunction(:file, type: :rvalue) do |args|
       case args[0]

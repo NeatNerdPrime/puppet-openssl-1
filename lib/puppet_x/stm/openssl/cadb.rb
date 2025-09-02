@@ -59,10 +59,10 @@ class PuppetX::OpenSSL::CADB
   # database file is already open (and therefore locked) in read mode.
   def self.replace(filename)
     mode = begin
-             File::Stat.new(filename) & 0o666
-           rescue
-             0o644
-           end
+      File::Stat.new(filename) & 0o666
+    rescue
+      0o644
+    end
 
     # Create new database file with a temporary name
     db = Tempfile.create(File.basename(filename), File.dirname(filename))

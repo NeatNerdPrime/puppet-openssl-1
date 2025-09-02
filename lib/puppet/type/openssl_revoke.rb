@@ -1,4 +1,4 @@
-# openssl_revoke.rb --- Revoke an OpenSSL certificate
+# frozen_string_literal: true
 
 Puppet::Type.newtype(:openssl_revoke) do
   @doc = <<-DOC

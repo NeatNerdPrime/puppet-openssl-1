@@ -1,4 +1,6 @@
-# openssl.rb --- Manage certificate hash as symbolic link
+# frozen_string_literal: true
+
+require 'fileutils'
 
 Puppet::Type.type(:openssl_hash).provide(:openssl) do
   desc <<-EOT
@@ -31,7 +33,7 @@ Puppet::Type.type(:openssl_hash).provide(:openssl) do
 
     return false if hash.nil?
 
-    link = File.join(path, hash + '.0')
+    link = File.join(path, "#{hash}.0")
     return false unless File.exist?(link)
 
     Puppet.debug("openssl_hash: #{link} exists")
@@ -52,19 +54,19 @@ Puppet::Type.type(:openssl_hash).provide(:openssl) do
   def create
     path = File.dirname(resource[:name])
     hash = gethash(resource[:name])
-    link = File.join(path, hash + '.0')
+    link = File.join(path, "#{hash}.0")
 
     Puppet.debug("openssl_hash: creating #{link} -> #{resource[:name]}")
 
     # First remove old entry
-    File.unlink(link) if File.exist?(link)
+    FileUtils.rm_f(link)
     File.symlink(resource[:name], link)
   end
 
   def destroy
     path = File.dirname(resource[:name])
     hash = gethash(resource[:name])
-    link = File.join(path, hash + '.0')
+    link = File.join(path, "#{hash}.0")
 
     Puppet.debug("openssl_hash: removing #{link}")
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'openssl_genparam' do
@@ -6,8 +8,8 @@ describe 'openssl_genparam' do
       let(:facts) { facts }
       let(:title) { '/foo.pem' }
 
-      ['2048', '4096', '8192'].each do |bits|
-        ['2', '5'].each do |generator|
+      %w[2048 4096 8192].each do |bits|
+        %w[2 5].each do |generator|
           context "with algorithm => DH, bits => #{bits}, generator => #{generator}" do
             let(:params) do
               { algorithm: 'DH', bits: bits, generator: generator }

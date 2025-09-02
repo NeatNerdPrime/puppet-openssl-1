@@ -1,4 +1,4 @@
-# ruby.rb --- Revoke an OpenSSL certificate
+# frozen_string_literal: true
 
 require_relative '../../../puppet_x/stm/openssl/cadb'
 
@@ -37,7 +37,7 @@ Puppet::Type.type(:openssl_revoke).provide(:ruby) do
             revdate = PuppetX::OpenSSL::CADB.timestamp(Time.now)
           end
 
-          new.puts status + "\t" + expdate + "\t" + revdate + "\t" + serial + "\t" + certfile + "\t" + subj
+          new.puts "#{status}\t#{expdate}\t#{revdate}\t#{serial}\t#{certfile}\t#{subj}"
         end
       end
     end
@@ -55,7 +55,7 @@ Puppet::Type.type(:openssl_revoke).provide(:ruby) do
           next if serial.casecmp(resource[:serial]).zero? &&
                   status == PuppetX::OpenSSL::CADB::REVOKED
 
-          new.puts status + "\t" + expdate + "\t" + revdate + "\t" + serial + "\t" + certfile + "\t" + subj
+          new.puts "#{status}\t#{expdate}\t#{revdate}\t#{serial}\t#{certfile}\t#{subj}"
         end
       end
     end

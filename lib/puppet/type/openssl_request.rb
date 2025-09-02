@@ -74,7 +74,7 @@ Puppet::Type.newtype(:openssl_request) do
 
     validate do |value|
       unless Puppet::Util.absolute_path?(value, :posix) || Puppet::Util.absolute_path?(value, :windows)
-        raise ArgumentError, _("File paths must be fully qualified, not '%{_value}'") % { _value: value }
+        raise ArgumentError, format("File paths must be fully qualified, not '%s'", value)
       end
     end
   end
@@ -262,9 +262,9 @@ Puppet::Type.newtype(:openssl_request) do
 
     validate do |value|
       value.all? do |item|
-        [:digitalSignature, :nonRepudiation, :keyEncipherment,
-         :dataEncipherment, :keyAgreement, :keyCertSign, :cRLSign,
-         :encipherOnly, :decipherOnly].include? item
+        %i[digitalSignature nonRepudiation keyEncipherment
+           dataEncipherment keyAgreement keyCertSign cRLSign
+           encipherOnly decipherOnly].include? item
       end
     end
   end
@@ -284,9 +284,9 @@ Puppet::Type.newtype(:openssl_request) do
 
     validate do |value|
       value.all? do |item|
-        [:serverAuth, :clientAuth, :codeSigning, :emailProtection,
-         :timeStamping, :OCSPSigning, :ipsecIKE, :msCodeInd, :msCodeCom,
-         :msCTLSign, :msEFS].include? item
+        %i[serverAuth clientAuth codeSigning emailProtection
+           timeStamping OCSPSigning ipsecIKE msCodeInd msCodeCom
+           msCTLSign msEFS].include? item
       end
     end
   end
@@ -338,7 +338,7 @@ Puppet::Type.newtype(:openssl_request) do
 
     validate do |value|
       unless Puppet::Util.absolute_path?(value, :posix) || Puppet::Util.absolute_path?(value, :windows)
-        raise ArgumentError, _("Key file paths must be fully qualified, not '%{_value}'") % { _value: value }
+        raise ArgumentError, format("Key file paths must be fully qualified, not '%s'", value)
       end
     end
   end
@@ -441,8 +441,9 @@ Puppet::Type.newtype(:openssl_request) do
       extensions = []
 
       unless self[:basic_constraints_ca].nil?
+        set_bc_ca = self[:basic_constraints_ca].to_s.upcase
         extensions << extfactory.create_ext('basicConstraints',
-                                            'CA:' + self[:basic_constraints_ca].to_s.upcase,
+                                            "CA:#{set_bc_ca}",
                                             critical(:basic_constraints_ca_critical))
       end
 
@@ -507,24 +508,15 @@ Puppet::Type.newtype(:openssl_request) do
 
   def generate
     opts = {
-      ensure: (self[:ensure] == :absent) ? :absent : :file
+      ensure: self[:ensure] == :absent ? :absent : :file
     }
 
-    [:path,
-     :owner,
-     :group,
-     :mode,
-     :backup,
-     :selinux_ignore_defaults,
-     :selrange,
-     :selrole,
-     :seltype,
-     :seluser,
-     :show_diff].each do |param|
+    %i[path owner group mode backup selinux_ignore_defaults
+       selrange selrole seltype seluser show_diff].each do |param|
       opts[param] = self[param] unless self[param].nil?
     end
 
-    excluded_metaparams = [:before, :notify, :require, :subscribe]
+    excluded_metaparams = %i[before notify require subscribe]
 
     Puppet::Type.metaparams.each do |metaparam|
       opts[metaparam] = self[metaparam] unless self[metaparam].nil? || excluded_metaparams.include?(metaparam)
@@ -560,8 +552,6 @@ Puppet::Type.newtype(:openssl_request) do
       true
     when :false, false
       false
-    else
-      nil
     end
   end
 end

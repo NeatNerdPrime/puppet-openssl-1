@@ -1,4 +1,4 @@
-# openssl_genparam.rb --- Generate openssl parameter files
+# frozen_string_literal: true
 
 Puppet::Type.newtype(:openssl_genparam) do
   @doc = <<-DOC
@@ -87,7 +87,7 @@ Puppet::Type.newtype(:openssl_genparam) do
     desc 'The algorithm to generate the parameters for.'
 
     newvalues 'DH', 'EC'
-    munge { |value| value.to_s }
+    munge(&:to_s)
 
     validate do |value|
       raise Puppet::Error, 'Parameter algorithm is mandatory' if value.nil?
@@ -98,21 +98,21 @@ Puppet::Type.newtype(:openssl_genparam) do
     desc 'The number of bits to use for Diffie-Hellman parameters.'
 
     newvalues '2048', '4096', '8192'
-    munge { |value| value.to_s }
+    munge(&:to_s)
   end
 
   newparam(:generator) do
     desc 'The generator to use for Diffie-Hellman parameters.'
 
     newvalues '2', '5'
-    munge { |value| value.to_s }
+    munge(&:to_s)
   end
 
   newparam(:curve) do
     desc 'The name of the curve to use for Elliptic Curve parameters.'
 
     newvalues %r{^[a-zA-Z][a-zA-Z0-9-]+[0-9]$}
-    munge { |value| value.to_s }
+    munge(&:to_s)
   end
 
   newparam(:refresh_interval) do

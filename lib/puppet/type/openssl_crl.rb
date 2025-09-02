@@ -56,7 +56,7 @@ Puppet::Type.newtype(:openssl_crl) do
 
     validate do |value|
       unless Puppet::Util.absolute_path?(value, :posix) || Puppet::Util.absolute_path?(value, :windows)
-        raise ArgumentError, _("File paths must be fully qualified, not '%{_value}'") % { _value: value }
+        raise ArgumentError, format("File paths must be fully qualified, not '%s'", value)
       end
     end
   end
@@ -191,7 +191,7 @@ Puppet::Type.newtype(:openssl_crl) do
       The number of days that the CRL should be valid.
     DOC
 
-    munge { |value| value.to_i }
+    munge(&:to_i)
 
     defaultto 30
     newvalues %r{^[0-9]+$}
@@ -217,7 +217,7 @@ Puppet::Type.newtype(:openssl_crl) do
 
     validate do |value|
       unless Puppet::Util.absolute_path?(value, :posix) || Puppet::Util.absolute_path?(value, :windows)
-        raise ArgumentError, _("File paths must be fully qualified, not '%{_value}'") % { _value: value }
+        raise ArgumentError, format("File paths must be fully qualified, not '%s'", value)
       end
     end
   end
@@ -233,7 +233,7 @@ Puppet::Type.newtype(:openssl_crl) do
 
     validate do |value|
       unless Puppet::Util.absolute_path?(value, :posix) || Puppet::Util.absolute_path?(value, :windows)
-        raise ArgumentError, _("File paths must be fully qualified, not '%{_value}'") % { _value: value }
+        raise ArgumentError, format("File paths must be fully qualified, not '%s'", value)
       end
     end
   end
@@ -274,11 +274,11 @@ Puppet::Type.newtype(:openssl_crl) do
 
       # Issuer key
       issuer_key = begin
-                     pem = File.open(self[:issuer_key])
-                     OpenSSL::PKey.read pem, self[:issuer_key_password]
-                   rescue
-                     raise Puppet::Error, 'Unable to load key (missing password?)'
-                   end
+        pem = File.open(self[:issuer_key])
+        OpenSSL::PKey.read pem, self[:issuer_key_password]
+      rescue
+        raise Puppet::Error, 'Unable to load key (missing password?)'
+      end
 
       # Set validiy of CRL
       crl.last_update = Time.now
@@ -288,23 +288,23 @@ Puppet::Type.newtype(:openssl_crl) do
       File.open(self[:crl_serial_file], 'r') do |old|
         if old.flock(File::LOCK_EX)
           mode = begin
-                   File::Stat.new(self[:crl_serial_file]) & 0o666
-                 rescue
-                   0o644
-                 end
+            File::Stat.new(self[:crl_serial_file]) & 0o666
+          rescue
+            0o644
+          end
 
           crlnum = begin
-                     old.gets.scan(%r{\d+}) { |num| break Integer(num) }
-                   rescue
-                     0
-                   end
+            old.gets.scan(%r{\d+}) { |num| break Integer(num) }
+          rescue
+            0
+          end
 
           crlnum += 1
 
           # Create new serial file with a temporary name
           new = Tempfile.create(File.basename(self[:crl_serial_file]), File.dirname(self[:crl_serial_file]))
 
-          new.puts '0%d' % [ crlnum ]
+          new.puts format('0%d', crlnum)
 
           # Use file permissions from the original file
           new.chmod(mode)
@@ -354,24 +354,15 @@ Puppet::Type.newtype(:openssl_crl) do
 
   def generate
     opts = {
-      ensure: (self[:ensure] == :absent) ? :absent : :file
+      ensure: self[:ensure] == :absent ? :absent : :file
     }
 
-    [:path,
-     :owner,
-     :group,
-     :mode,
-     :backup,
-     :selinux_ignore_defaults,
-     :selrange,
-     :selrole,
-     :seltype,
-     :seluser,
-     :show_diff].each do |param|
+    %i[path owner group mode backup selinux_ignore_defaults
+       selrange selrole seltype seluser show_diff].each do |param|
       opts[param] = self[param] unless self[param].nil?
     end
 
-    excluded_metaparams = [:before, :notify, :require, :subscribe]
+    excluded_metaparams = %i[before notify require subscribe]
 
     Puppet::Type.metaparams.each do |metaparam|
       opts[metaparam] = self[metaparam] unless self[metaparam].nil? || excluded_metaparams.include?(metaparam)

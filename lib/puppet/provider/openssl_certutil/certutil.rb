@@ -1,4 +1,4 @@
-# certutil.rb --- Manage trusted certificates using certutil
+# frozen_string_literal: true
 
 Puppet::Type.type(:openssl_certutil).provide(:certutil) do
   desc <<-EOT
@@ -7,11 +7,13 @@ Puppet::Type.type(:openssl_certutil).provide(:certutil) do
 
   commands certutil: 'certutil'
 
-  NSSDATABASE = 'sql:/etc/pki/nssdb'.freeze
-
   def initialize(value = {})
     super(value)
     @property_flush = {}
+  end
+
+  def self.nssdatabase
+    'sql:/etc/pki/nssdb'
   end
 
   def self.canonicalize_trustargs(value)
@@ -21,7 +23,7 @@ Puppet::Type.type(:openssl_certutil).provide(:certutil) do
 
   def self.instances
     certs = []
-    certutil('-L', '-d', NSSDATABASE).each_line do |line|
+    certutil('-L', '-d', nssdatabase).each_line do |line|
       match = line.match(%r{^(.*\S)\s+([pPcTCu]*),([pPcTCu]*),([pPcTCu]*)\s*$})
       next unless match
 
@@ -83,7 +85,7 @@ Puppet::Type.type(:openssl_certutil).provide(:certutil) do
       trust << (@property_flush[:email_trust] || resource[:email_trust])
       trust << (@property_flush[:object_signing_trust] || resource[:object_signing_trust])
 
-      args = ['-M', '-d', NSSDATABASE]
+      args = ['-M', '-d', nssdatabase]
       args << ['-n', resource[:name]]
       args << ['-t', trust.join(',')]
 
@@ -98,7 +100,7 @@ Puppet::Type.type(:openssl_certutil).provide(:certutil) do
 
     trust = [resource[:ssl_trust], resource[:email_trust], resource[:object_signing_trust]]
 
-    args = ['-A', '-d', NSSDATABASE]
+    args = ['-A', '-d', nssdatabase]
     args << ['-n', resource[:name]]
     args << ['-t', trust.join(',')]
     args << ['-i', resource[:filename]]
@@ -111,7 +113,7 @@ Puppet::Type.type(:openssl_certutil).provide(:certutil) do
   def destroy
     Puppet.debug("openssl_certutil: destroy #{resource[:name]}")
 
-    args = ['-D', '-d', NSSDATABASE]
+    args = ['-D', '-d', nssdatabase]
     args << ['-n', resource[:name]]
 
     certutil(*args)

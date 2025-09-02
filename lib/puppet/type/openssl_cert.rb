@@ -87,7 +87,7 @@ Puppet::Type.newtype(:openssl_cert) do
 
     validate do |value|
       unless Puppet::Util.absolute_path?(value, :posix) || Puppet::Util.absolute_path?(value, :windows)
-        raise ArgumentError, _("File paths must be fully qualified, not '%{_value}'") % { _value: value }
+        raise ArgumentError, format("File paths must be fully qualified, not '%s'", value)
       end
     end
   end
@@ -240,7 +240,7 @@ Puppet::Type.newtype(:openssl_cert) do
       issuing certificate.
     DOC
 
-    munge { |value| value.to_i }
+    munge(&:to_i)
 
     defaultto 365
     newvalues %r{^[0-9]+$}
@@ -259,9 +259,9 @@ Puppet::Type.newtype(:openssl_cert) do
 
     validate do |value|
       value.all? do |item|
-        [:digitalSignature, :nonRepudiation, :keyEncipherment,
-         :dataEncipherment, :keyAgreement, :keyCertSign, :cRLSign,
-         :encipherOnly, :decipherOnly].include? item
+        %i[digitalSignature nonRepudiation keyEncipherment
+           dataEncipherment keyAgreement keyCertSign cRLSign
+           encipherOnly decipherOnly].include? item
       end
     end
   end
@@ -287,9 +287,9 @@ Puppet::Type.newtype(:openssl_cert) do
 
     validate do |value|
       value.all? do |item|
-        [:serverAuth, :clientAuth, :codeSigning, :emailProtection,
-         :timeStamping, :OCSPSigning, :ipsecIKE, :msCodeInd, :msCodeCom,
-         :msCTLSign, :msEFS].include? item
+        %i[serverAuth clientAuth codeSigning emailProtection
+           timeStamping OCSPSigning ipsecIKE msCodeInd msCodeCom
+           msCTLSign msEFS].include? item
       end
     end
   end
@@ -415,7 +415,7 @@ Puppet::Type.newtype(:openssl_cert) do
 
     validate do |value|
       unless Puppet::Util.absolute_path?(value, :posix) || Puppet::Util.absolute_path?(value, :windows)
-        raise ArgumentError, _("File paths must be fully qualified, not '%{_value}'") % { _value: value }
+        raise ArgumentError, format("File paths must be fully qualified, not '%s'", value)
       end
     end
   end
@@ -479,7 +479,7 @@ Puppet::Type.newtype(:openssl_cert) do
         raise Puppet::Error, 'Unable to load key (missing password?)'
       end
 
-      selfsigned = if req.public_key.public_key.class == issuer_key.public_key.class
+      selfsigned = if req.public_key.public_key.instance_of?(issuer_key.public_key.class)
                      case issuer_key.public_key
                      when OpenSSL::PKey::RSA
                        issuer_key.public_key.to_s == req.public_key.to_s
@@ -516,7 +516,7 @@ Puppet::Type.newtype(:openssl_cert) do
       qwords = bit128.unpack('Q>*')
 
       # The hex format is used for the CA database
-      serial = bit128.unpack('C*').map { |x| '%02x' % x }.join
+      serial = bit128.unpack('C*').map { |x| format('%02x', x) }.join
 
       crt.serial = (OpenSSL::BN.new(qwords[0]) << 64) + OpenSSL::BN.new(qwords[1])
 
@@ -554,23 +554,18 @@ Puppet::Type.newtype(:openssl_cert) do
 
       # Filter extensions
       extensions.delete_if do |key, _|
-        if !self[:copy_request_extensions].include? key
-          # Remove the extension if we have an array of permitted extensions
-          # and the extension is not included in that array.
-          true
-        elsif self[:omit_request_extensions].include? key
-          # Remove the extension if we have an array of disallowed extensions
-          # and the extension is included in that array.
-          true
-        else
-          # Allow the extension otherwise.
-          false
-        end
+        # Remove the extension if we have an array of permitted extensions
+        # and the extension is not included in that array or if we have an
+        # array of disallowed extensions and the extension is included in
+        # that array.
+        !self[:copy_request_extensions].include? key or
+          self[:omit_request_extensions].include? key
       end
 
       unless self[:basic_constraints_ca].nil?
+        set_bc_ca = self[:basic_constraints_ca].to_s.upcase
         ext = extfactory.create_ext('basicConstraints',
-                                    'CA:' + self[:basic_constraints_ca].to_s.upcase,
+                                    "CA:#{set_bc_ca}",
                                     critical(:basic_constraints_ca_critical))
         extensions[ext.oid] = ext
       end
@@ -618,17 +613,16 @@ Puppet::Type.newtype(:openssl_cert) do
           # 3) Certificate revocation date in [YY]YYMMDDHHMMSSZ[,reason]
           #    format. Empty if not revoked.
           # 4) Certificate serial number in hex.
-          # 5) Certificate filename or literal string ‘unknown’.
+          # 5) Certificate filename or literal string `unknown'.
           # 6) Certificate subject DN.
 
-          file.puts "%{status}\t%{expired}\t%{revoked}\t%{serial}\t%{certfile}\t%{subject}" % {
-            status:   PuppetX::OpenSSL::CADB::VALID,
-            expired:  PuppetX::OpenSSL::CADB.timestamp(crt.not_after),
-            revoked:  '',
-            serial:   serial.to_s,
-            certfile: self[:path],
-            subject:  crt.subject.to_s,
-          }
+          file.puts format("%s\t%s\t%s\t%s\t%s\t%s",
+                           PuppetX::OpenSSL::CADB::VALID,
+                           PuppetX::OpenSSL::CADB.timestamp(crt.not_after),
+                           '',
+                           serial.to_s,
+                           self[:path],
+                           crt.subject.to_s)
         end
       end
 
@@ -640,24 +634,15 @@ Puppet::Type.newtype(:openssl_cert) do
 
   def generate
     opts = {
-      ensure: (self[:ensure] == :absent) ? :absent : :file
+      ensure: self[:ensure] == :absent ? :absent : :file
     }
 
-    [:path,
-     :owner,
-     :group,
-     :mode,
-     :backup,
-     :selinux_ignore_defaults,
-     :selrange,
-     :selrole,
-     :seltype,
-     :seluser,
-     :show_diff].each do |param|
+    %i[path owner group mode backup selinux_ignore_defaults
+       selrange selrole seltype seluser show_diff].each do |param|
       opts[param] = self[param] unless self[param].nil?
     end
 
-    excluded_metaparams = [:before, :notify, :require, :subscribe]
+    excluded_metaparams = %i[before notify require subscribe]
 
     Puppet::Type.metaparams.each do |metaparam|
       opts[metaparam] = self[metaparam] unless self[metaparam].nil? || excluded_metaparams.include?(metaparam)
@@ -669,7 +654,7 @@ Puppet::Type.newtype(:openssl_cert) do
   def eval_generate
     generate = if File.file?(self[:path])
                  # Check file content
-                 regex = Regexp.new('^-+BEGIN CERTIFICATE-+$').freeze
+                 regex = Regexp.new('^-+BEGIN CERTIFICATE-+$')
                  File.open(self[:path]).each_line.none? { |x| x.match?(regex) }
                else
                  true
@@ -693,8 +678,6 @@ Puppet::Type.newtype(:openssl_cert) do
       true
     when :false, false
       false
-    else
-      nil
     end
   end
 end

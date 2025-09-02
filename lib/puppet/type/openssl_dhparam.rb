@@ -59,7 +59,7 @@ Puppet::Type.newtype(:openssl_dhparam) do
 
     validate do |value|
       unless Puppet::Util.absolute_path?(value, :posix) || Puppet::Util.absolute_path?(value, :windows)
-        raise ArgumentError, _("File paths must be fully qualified, not '%{_value}'") % { _value: value }
+        raise ArgumentError, format("File paths must be fully qualified, not '%s'", value)
       end
     end
   end
@@ -162,7 +162,7 @@ Puppet::Type.newtype(:openssl_dhparam) do
       The number of bits for the Diffie-Hellman parameters.
     DOC
 
-    munge { |value| value.to_i }
+    munge(&:to_i)
 
     defaultto 2048
     newvalues(1024, 2048, 3072, 4096, 5120, 6144, 7168, 8192)
@@ -173,7 +173,7 @@ Puppet::Type.newtype(:openssl_dhparam) do
       The generator number for the Diffie-Hellman parameters.
     DOC
 
-    munge { |value| value.to_i }
+    munge(&:to_i)
 
     defaultto 2
     newvalues(2, 5)
@@ -203,24 +203,15 @@ Puppet::Type.newtype(:openssl_dhparam) do
 
   def generate
     opts = {
-      ensure: (self[:ensure] == :absent) ? :absent : :file
+      ensure: self[:ensure] == :absent ? :absent : :file
     }
 
-    [:path,
-     :owner,
-     :group,
-     :mode,
-     :backup,
-     :selinux_ignore_defaults,
-     :selrange,
-     :selrole,
-     :seltype,
-     :seluser,
-     :show_diff].each do |param|
+    %i[path owner group mode backup selinux_ignore_defaults
+       selrange selrole seltype seluser show_diff].each do |param|
       opts[param] = self[param] unless self[param].nil?
     end
 
-    excluded_metaparams = [:before, :notify, :require, :subscribe]
+    excluded_metaparams = %i[before notify require subscribe]
 
     Puppet::Type.metaparams.each do |metaparam|
       opts[metaparam] = self[metaparam] unless self[metaparam].nil? || excluded_metaparams.include?(metaparam)

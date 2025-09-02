@@ -1,4 +1,4 @@
-# openssl_certutil.rb --- Manage trusted certificates using certutil
+# frozen_string_literal: true
 
 Puppet::Type.newtype(:openssl_certutil) do
   @doc = <<-DOC
@@ -82,10 +82,8 @@ Puppet::Type.newtype(:openssl_certutil) do
   end
 
   validate do
-    unless self[:filename]
-      unless self[:ensure].to_s == 'absent'
-        raise(Puppet::Error, 'Parameter filename is a required attribute')
-      end
+    unless self[:filename] || self[:ensure].to_s == 'absent'
+      raise(Puppet::Error, 'Parameter filename is a required attribute')
     end
   end
 end

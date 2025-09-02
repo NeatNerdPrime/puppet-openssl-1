@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'openssl' do
@@ -5,7 +7,7 @@ describe 'openssl' do
     { cert_source_directory: '/foo' }
   end
 
-  before(:each) do
+  before do
     # Mock the Puppet file() function
     Puppet::Parser::Functions.newfunction(:file, type: :rvalue) do |args|
       case args[0]
@@ -82,7 +84,7 @@ describe 'openssl' do
       end
 
       context 'with two elements for ca_cert' do
-        let(:params) { default_params.merge(ca_certs: ['cert', 'ca']) }
+        let(:params) { default_params.merge(ca_certs: %w[cert ca]) }
 
         it {
           is_expected.to contain_openssl__cacert('cert')
