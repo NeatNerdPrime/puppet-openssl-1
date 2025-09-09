@@ -221,16 +221,18 @@ Puppet::Type.newtype(:openssl_dhparam) do
   end
 
   def eval_generate
-    generate = if File.file?(self[:path])
-                 # Check file content
-                 regex = Regexp.new('^-+BEGIN DH PARAMETERS-+$').freeze
-                 File.open(self[:path]).each_line.none? { |x| x.match?(regex) }
-               else
-                 true
-               end
+    store = if self[:ensure] == :absent
+              false
+            elsif File.file?(self[:path])
+              # Check file content
+              regex = Regexp.new('^-+BEGIN DH PARAMETERS-+$').freeze
+              File.open(self[:path]).each_line.none? { |x| x.match?(regex) }
+            else
+              true
+            end
 
     # define/replace content
-    catalog.resource("File[#{self[:path]}]")[:content] = content if generate
+    catalog.resource("File[#{self[:path]}]")[:content] = content if store
 
     [catalog.resource("File[#{self[:path]}]")]
   end
