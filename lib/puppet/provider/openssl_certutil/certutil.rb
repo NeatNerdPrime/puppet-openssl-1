@@ -8,7 +8,7 @@ Puppet::Type.type(:openssl_certutil).provide(:certutil) do
   commands certutil: 'certutil'
 
   def initialize(value = {})
-    super(value)
+    super
     @property_flush = {}
   end
 

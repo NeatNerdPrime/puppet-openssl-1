@@ -387,7 +387,7 @@ Puppet::Type.newtype(:openssl_request) do
       req.version = 0
 
       # Read the key from the file; this could be a RSA or EC key
-      pem = File.open(self[:key])
+      pem = File.read(self[:key])
 
       begin
         key = OpenSSL::PKey.read pem, self[:key_password]
@@ -508,7 +508,7 @@ Puppet::Type.newtype(:openssl_request) do
 
   def generate
     opts = {
-      ensure: self[:ensure] == :absent ? :absent : :file
+      ensure: (self[:ensure] == :absent) ? :absent : :file,
     }
 
     %i[path owner group mode backup selinux_ignore_defaults
@@ -531,7 +531,7 @@ Puppet::Type.newtype(:openssl_request) do
             elsif File.file?(self[:path])
               # Check file content
               regex = Regexp.new('^-+BEGIN CERTIFICATE REQUEST-+$').freeze
-              File.open(self[:path]).each_line.none? { |x| x.match?(regex) }
+              File.read(self[:path]).each_line.none? { |x| x.match?(regex) }
             else
               true
             end

@@ -11,7 +11,7 @@ Puppet::Type.type(:openssl_genparam).provide(:openssl) do
   commands openssl: 'openssl'
 
   def initialize(value = {})
-    super(value)
+    super
     @trigger_refresh = true
   end
 

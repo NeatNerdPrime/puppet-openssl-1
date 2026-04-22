@@ -269,7 +269,7 @@ Puppet::Type.newtype(:openssl_key) do
 
   def generate
     opts = {
-      ensure: self[:ensure] == :absent ? :absent : :file
+      ensure: (self[:ensure] == :absent) ? :absent : :file,
     }
 
     %i[path owner group mode backup selinux_ignore_defaults
@@ -292,7 +292,7 @@ Puppet::Type.newtype(:openssl_key) do
             elsif File.file?(self[:path])
               # Check file content
               regex = Regexp.new('^-+BEGIN.+PRIVATE KEY-+$').freeze
-              File.open(self[:path]).each_line.none? { |x| x.match?(regex) }
+              File.read(self[:path]).each_line.none? { |x| x.match?(regex) }
             else
               true
             end

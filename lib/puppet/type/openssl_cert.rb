@@ -466,12 +466,12 @@ Puppet::Type.newtype(:openssl_cert) do
   def content
     unless @generated_content
       # Read and validate request
-      req = OpenSSL::X509::Request.new File.open(self[:request])
+      req = OpenSSL::X509::Request.new File.read(self[:request])
 
       raise ArgumentError, 'Request signature is invalid' unless req.verify req.public_key
 
       # Read and validate private key
-      pem = File.open(self[:issuer_key])
+      pem = File.read(self[:issuer_key])
 
       begin
         issuer_key = OpenSSL::PKey.read pem, self[:issuer_key_password]
@@ -506,7 +506,7 @@ Puppet::Type.newtype(:openssl_cert) do
         crt.issuer = req.subject
         Puppet.notice("#{self} issuing self-signed certificate for #{crt.issuer}")
       else
-        issuer = OpenSSL::X509::Certificate.new File.open(self[:issuer_cert])
+        issuer = OpenSSL::X509::Certificate.new File.read(self[:issuer_cert])
         crt.issuer = issuer.subject
         Puppet.notice("#{self} issuing certificate from #{crt.issuer}")
       end
@@ -634,7 +634,7 @@ Puppet::Type.newtype(:openssl_cert) do
 
   def generate
     opts = {
-      ensure: self[:ensure] == :absent ? :absent : :file
+      ensure: (self[:ensure] == :absent) ? :absent : :file,
     }
 
     %i[path owner group mode backup selinux_ignore_defaults
@@ -657,7 +657,7 @@ Puppet::Type.newtype(:openssl_cert) do
             elsif File.file?(self[:path])
               # Check file content
               regex = Regexp.new('^-+BEGIN CERTIFICATE-+$').freeze
-              File.open(self[:path]).each_line.none? { |x| x.match?(regex) }
+              File.read(self[:path]).each_line.none? { |x| x.match?(regex) }
             else
               true
             end

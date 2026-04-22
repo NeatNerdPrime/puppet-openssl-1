@@ -269,12 +269,12 @@ Puppet::Type.newtype(:openssl_crl) do
       crl.version = 1
 
       # Issuer certificate
-      issuer = OpenSSL::X509::Certificate.new File.open(self[:issuer_cert])
+      issuer = OpenSSL::X509::Certificate.new File.read(self[:issuer_cert])
       crl.issuer = issuer.subject
 
       # Issuer key
       issuer_key = begin
-        pem = File.open(self[:issuer_key])
+        pem = File.read(self[:issuer_key])
         OpenSSL::PKey.read pem, self[:issuer_key_password]
       rescue
         raise Puppet::Error, 'Unable to load key (missing password?)'
@@ -354,7 +354,7 @@ Puppet::Type.newtype(:openssl_crl) do
 
   def generate
     opts = {
-      ensure: self[:ensure] == :absent ? :absent : :file
+      ensure: (self[:ensure] == :absent) ? :absent : :file,
     }
 
     %i[path owner group mode backup selinux_ignore_defaults
@@ -377,7 +377,7 @@ Puppet::Type.newtype(:openssl_crl) do
             elsif File.file?(self[:path])
               # Check file content
               regex = Regexp.new('^-+BEGIN X509 CRL-+$').freeze
-              File.open(self[:path]).each_line.none? { |x| x.match?(regex) }
+              File.read(self[:path]).each_line.none? { |x| x.match?(regex) }
             else
               true
             end

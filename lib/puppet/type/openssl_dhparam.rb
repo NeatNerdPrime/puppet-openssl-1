@@ -203,7 +203,7 @@ Puppet::Type.newtype(:openssl_dhparam) do
 
   def generate
     opts = {
-      ensure: self[:ensure] == :absent ? :absent : :file
+      ensure: (self[:ensure] == :absent) ? :absent : :file,
     }
 
     %i[path owner group mode backup selinux_ignore_defaults
@@ -226,7 +226,7 @@ Puppet::Type.newtype(:openssl_dhparam) do
             elsif File.file?(self[:path])
               # Check file content
               regex = Regexp.new('^-+BEGIN DH PARAMETERS-+$').freeze
-              File.open(self[:path]).each_line.none? { |x| x.match?(regex) }
+              File.read(self[:path]).each_line.none? { |x| x.match?(regex) }
             else
               true
             end
