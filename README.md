@@ -125,7 +125,7 @@ openssl_request { '/etc/ssl/ca.csr':
 }
 ```
 
-Finally the certificate is signed using the same key used for the request (so it will be a self-signed certificate). Some extensions line _KeyUsage_ and _BasicConstraints_ are defined.
+Finally the certificate is signed using the same key used for the request (so it will be a self-signed certificate). Some extensions like _KeyUsage_ and _BasicConstraints_ are defined.
 
 ``` puppet
 
