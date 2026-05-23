@@ -80,7 +80,7 @@ openssl_key { '/etc/ssl/rsa-2048.key': }
 Owner, group and mode may be specified when a key is generated. The number of bits can be `1024`, `2048` (default), `3072`, `4096`, `5120`, `6144`, `7168` or `8192` for an RSA key.
 
 ``` puppet
-openssl_key { '/etc/apache/ssl/rsa-2048.key':
+openssl_key { '/etc/apache/ssl/rsa-4096.key':
   bits  => 4096,
   owner => 'www-data',
   group => 'www-data',
@@ -128,7 +128,6 @@ openssl_request { '/etc/ssl/ca.csr':
 Finally the certificate is signed using the same key used for the request (so it will be a self-signed certificate). Some extensions like _KeyUsage_ and _BasicConstraints_ are defined.
 
 ``` puppet
-
 openssl_cert { '/etc/ssl/ca.crt':
   request                       => '/etc/ssl/ca.csr',
   issuer_key                    => '/etc/ssl/ca.key',
