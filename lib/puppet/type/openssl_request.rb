@@ -284,9 +284,10 @@ Puppet::Type.newtype(:openssl_request) do
 
     validate do |value|
       value.all? do |item|
-        %i[serverAuth clientAuth codeSigning emailProtection
-           timeStamping OCSPSigning ipsecIKE msCodeInd msCodeCom
-           msCTLSign msEFS].include? item
+        item.match? %r{\A\d+(?:\.\d+)*\Z} or
+          %i[serverAuth clientAuth codeSigning emailProtection
+             timeStamping OCSPSigning ipsecIKE msCodeInd msCodeCom
+             msCTLSign msEFS].include? item
       end
     end
   end

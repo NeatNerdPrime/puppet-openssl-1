@@ -279,7 +279,7 @@ Puppet::Type.newtype(:openssl_cert) do
       The X.509v3 Extended Key Usage extension. Valid options: `serverAuth`,
       `clientAuth`, `codeSigning`, `emailProtection`, `timeStamping`,
       `OCSPSigning`, `ipsecIKE`, `msCodeInd`, `msCodeCom`, `msCTLSign`,
-      `msEFS`.
+      `msEFS` or an OID value.
 
       Setting this parameter overrides the value of the `extendedKeyUsage`
       extension from the request.
@@ -287,9 +287,10 @@ Puppet::Type.newtype(:openssl_cert) do
 
     validate do |value|
       value.all? do |item|
-        %i[serverAuth clientAuth codeSigning emailProtection
-           timeStamping OCSPSigning ipsecIKE msCodeInd msCodeCom
-           msCTLSign msEFS].include? item
+        item.match? %r{\A\d+(?:\.\d+)*\Z} or
+          %i[serverAuth clientAuth codeSigning emailProtection
+             timeStamping OCSPSigning ipsecIKE msCodeInd msCodeCom
+             msCTLSign msEFS].include? item
       end
     end
   end

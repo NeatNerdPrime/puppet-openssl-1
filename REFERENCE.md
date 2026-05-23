@@ -676,7 +676,7 @@ Default value: `365`
 The X.509v3 Extended Key Usage extension. Valid options: `serverAuth`,
 `clientAuth`, `codeSigning`, `emailProtection`, `timeStamping`,
 `OCSPSigning`, `ipsecIKE`, `msCodeInd`, `msCodeCom`, `msCTLSign`,
-`msEFS`.
+`msEFS` or an OID value.
 
 Setting this parameter overrides the value of the `extendedKeyUsage`
 extension from the request.
