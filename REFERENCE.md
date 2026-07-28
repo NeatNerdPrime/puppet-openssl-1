@@ -103,11 +103,15 @@ Data type: `String`
 
 The name of the OpenSSL package to install.
 
+Default value: `'openssl'`
+
 ##### <a name="-openssl--package_ensure"></a>`package_ensure`
 
 Data type: `String`
 
 The desired package state.
+
+Default value: `'installed'`
 
 ##### <a name="-openssl--root_group"></a>`root_group`
 
@@ -122,6 +126,8 @@ Data type: `Array[String]`
 
 An array of CA certificates that are installed by default. Internally
 this uses the `openssl::cert` defined type.
+
+Default value: `[]`
 
 ## Defined types
 
