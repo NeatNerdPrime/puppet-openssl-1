@@ -1,3 +1,27 @@
+## 2026-07-29 - Release 6.0.0
+
+### Bugfixes
+
+- Types that generate files (keys, DH params, ...) will no longer try to generate the file content when the resource is managed to be absent.
+
+### Features
+
+- Add support for RedHat-10.
+- Add support for OracleLinux-10.
+- Add support for Debian-13 Trixie.
+- Add support for Ubuntu-24.04 Noble Numbat.
+- Add support for Ubuntu-26.04 Resolute Raccoon.
+- Replace calls to deprecated Facter::Util::Resolution methods.
+
+### Breaking changes
+
+- Drop support for FreeBSD.
+- Drop support for RedHat-7.
+- Drop support for OracleLinux-7.
+- Drop support for Debian-10 Buster.
+- Drop support for Ubuntu-18.04 Bionic Beaver.
+- Drop support for Puppet; add support for OpenVox.
+
 ## 2024-11-14 - Release 5.0.0
 
 ### Features
