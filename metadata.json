@@ -1,6 +1,6 @@
 {
   "name": "stm-openssl",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "author": "stm",
   "summary": "Create and deploy X.509 certificates, keys and Diffie-Hellman parameter files",
   "license": "BSD-2-Clause",
@@ -63,8 +63,5 @@
     "certutil",
     "x509",
     "certificate"
-  ],
-  "pdk-version": "3.4.0",
-  "template-url": "https://github.com/puppetlabs/pdk-templates#main",
-  "template-ref": "tags/3.4.0.2-0-gd5f5ac1"
+  ]
 }

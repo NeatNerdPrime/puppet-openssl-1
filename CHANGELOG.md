@@ -1,3 +1,9 @@
+## 2026-09-01 - Release 6.1.0
+
+### Bugfixes
+
+- Fix reference to class method in the `certutil` provider.
+
 ## 2026-07-29 - Release 6.0.0
 
 ### Bugfixes
