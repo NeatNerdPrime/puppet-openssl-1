@@ -85,7 +85,7 @@ Puppet::Type.type(:openssl_certutil).provide(:certutil) do
       trust << (@property_flush[:email_trust] || resource[:email_trust])
       trust << (@property_flush[:object_signing_trust] || resource[:object_signing_trust])
 
-      args = ['-M', '-d', nssdatabase]
+      args = ['-M', '-d', self.class.nssdatabase]
       args << ['-n', resource[:name]]
       args << ['-t', trust.join(',')]
 
@@ -100,7 +100,7 @@ Puppet::Type.type(:openssl_certutil).provide(:certutil) do
 
     trust = [resource[:ssl_trust], resource[:email_trust], resource[:object_signing_trust]]
 
-    args = ['-A', '-d', nssdatabase]
+    args = ['-A', '-d', self.class.nssdatabase]
     args << ['-n', resource[:name]]
     args << ['-t', trust.join(',')]
     args << ['-i', resource[:filename]]
@@ -113,7 +113,7 @@ Puppet::Type.type(:openssl_certutil).provide(:certutil) do
   def destroy
     Puppet.debug("openssl_certutil: destroy #{resource[:name]}")
 
-    args = ['-D', '-d', nssdatabase]
+    args = ['-D', '-d', self.class.nssdatabase]
     args << ['-n', resource[:name]]
 
     certutil(*args)
